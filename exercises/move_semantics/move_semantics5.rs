@@ -3,13 +3,11 @@
 // adding, changing or removing any of them.
 // Execute `rustlings hint move_semantics5` for hints :)
 
-// I AM NOT DONE
-
 fn main() {
-    let mut x = 100;
-    let y = &mut x;
-    let z = &mut x;
+    let mut x = 100; // The benefit of having this restriction
+    let y = &mut x;  // is that Rust can prevent data races at compile time.
     *y += 100;
+    let z = &mut x;
     *z += 1000;
     assert_eq!(x, 1200);
 }

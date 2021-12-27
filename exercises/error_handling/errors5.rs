@@ -4,8 +4,6 @@
 // It won't compile right now! Why?
 // Execute `rustlings hint errors5` for hints!
 
-// I AM NOT DONE
-
 use std::error;
 use std::fmt;
 use std::num::ParseIntError;
@@ -14,7 +12,7 @@ use std::num::ParseIntError;
 fn main() -> Result<(), ParseIntError> {
     let pretend_user_input = "42";
     let x: i64 = pretend_user_input.parse()?;
-    println!("output={:?}", PositiveNonzeroInteger::new(x)?);
+    println!("output={:?}", PositiveNonzeroInteger::new(x));
     Ok(())
 }
 
@@ -32,9 +30,9 @@ enum CreationError {
 impl PositiveNonzeroInteger {
     fn new(value: i64) -> Result<PositiveNonzeroInteger, CreationError> {
         match value {
-            x if x < 0 => Err(CreationError::Negative),
-            x if x == 0 => Err(CreationError::Zero),
-            x => Ok(PositiveNonzeroInteger(x as u64))
+            1.. => Ok(PositiveNonzeroInteger(value as u64)),
+            0 => Err(CreationError::Zero),
+            _ => Err(CreationError::Negative)
         }
     }
 }
