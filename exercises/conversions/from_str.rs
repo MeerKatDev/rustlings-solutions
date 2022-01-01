@@ -42,21 +42,17 @@ impl FromStr for Person {
     fn from_str(s: &str) -> Result<Person, Self::Err> {
         if s.is_empty() {
             Err(ParsePersonError::Empty)
-        } else {
-            match s.split_once(",") {
-                Some((name, age)) if matches!(age.parse::<usize>(), Ok(_))  =>
-                    if name == "" {
-                        Err(ParsePersonError::NoName)
-                    } else {
-                        Ok(Person { name: String::from(name), age: age.parse().unwrap() })
-                    },
-                Some((_, age)) if matches!(age.parse::<usize>(), Err(_)) && !matches!(age.split_once(","), Some((_,_))) => {
-                    let err = age.parse::<usize>().unwrap_err();
-                    Err(ParsePersonError::ParseInt(err))
-                },
-                _ =>
-                    Err(ParsePersonError::BadLen)
+        } else if let Some((name, age)) = s.split_once(",") {
+            if name.is_empty() {
+                Err(ParsePersonError::NoName)
+            } else {
+                Ok(Person {
+                    name: String::from(name),
+                    age: parse_age(age)?,
+                })
             }
+        } else {
+            Err(ParsePersonError::BadLen)
         }
     }
 }
