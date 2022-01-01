@@ -57,6 +57,17 @@ impl FromStr for Person {
     }
 }
 
+fn parse_age(age: &str) -> Result<usize, ParsePersonError> {
+    if age.contains(',') {
+        Err(ParsePersonError::BadLen)
+    } else {
+        match age.parse() {
+            Ok(age) => Ok(age),
+            Err(err) => Err(ParsePersonError::ParseInt(err)),
+        }
+    }
+}
+
 fn main() {
     let p = "Mark,20".parse::<Person>().unwrap();
     println!("{:?}", p);
