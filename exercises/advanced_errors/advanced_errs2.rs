@@ -16,8 +16,6 @@
 // 4. Complete the partial implementation of `Display` for
 //    `ParseClimateError`.
 
-// I AM NOT DONE
-
 use std::error::Error;
 use std::fmt::{self, Display, Formatter};
 use std::num::{ParseFloatError, ParseIntError};
@@ -47,6 +45,7 @@ impl From<ParseIntError> for ParseClimateError {
 impl From<ParseFloatError> for ParseClimateError {
     fn from(e: ParseFloatError) -> Self {
         // TODO: Complete this function
+        Self::ParseFloat(e)
     }
 }
 
@@ -62,9 +61,21 @@ impl Display for ParseClimateError {
         // Imports the variants to make the following code more compact.
         use ParseClimateError::*;
         match self {
+            Empty => write!(f, "empty input"),
+            BadLen => write!(f, "incorrect number of fields"),
             NoCity => write!(f, "no city name"),
-            ParseFloat(e) => write!(f, "error parsing temperature: {}", e),
-            _ => write!(f, "unhandled error!"),
+            ParseInt(e) => write!(f, "error parsing year: {}", e),
+            ParseFloat(e) => write!(f, "error parsing temperature: {}", e)
+        }
+    }
+}
+
+impl Error for ParseClimateError {
+    fn source(&self) -> Option<&(dyn Error + 'static)> {
+        match self {
+            ParseClimateError::ParseFloat(e) => Some(e),
+            ParseClimateError::ParseInt(e) => Some(e),
+            _ => None
         }
     }
 }
@@ -91,8 +102,11 @@ impl FromStr for Climate {
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         let v: Vec<_> = s.split(',').collect();
         let (city, year, temp) = match &v[..] {
+            ["", _a, _b] => return Err(ParseClimateError::NoCity),
             [city, year, temp] => (city.to_string(), year, temp),
+            _ if s.is_empty() => return Err(ParseClimateError::Empty),
             _ => return Err(ParseClimateError::BadLen),
+
         };
         let year: u32 = year.parse()?;
         let temp: f32 = temp.parse()?;
@@ -191,11 +205,10 @@ mod test {
         );
     }
     #[test]
-    #[ignore]
     fn test_downcast() {
         let res = "São Paulo,-21,28.5".parse::<Climate>();
         assert!(matches!(res, Err(ParseClimateError::ParseInt(_))));
-        let err = res.unwrap_err();
+        let err: ParseClimateError = res.unwrap_err();
         let inner: Option<&(dyn Error + 'static)> = err.source();
         assert!(inner.is_some());
         assert!(inner.unwrap().is::<ParseIntError>());
